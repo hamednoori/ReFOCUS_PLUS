@@ -5,21 +5,47 @@ def prediction_on_edge(graph, net):
  soup = BeautifulSoup(data)
  f.close()
  dict_edge_deparr={}
+ #interval_tag= soup.findAll("vehicle")
  for vehicle_tag in soup.findAll("vehicle"):
 	  vehicle_id = vehicle_tag["id"]
 	  vehicle_route = vehicle_tag.find("route")
 	  vehicle_edges = vehicle_route["edges"]
 	  dict_edge_deparr[vehicle_id]= vehicle_edges
+ 
+ # # f = open('joined.rou.xml', 'r')
+ # # data = f.read()
+ # # soup = BeautifulSoup(data)
+ # # f.close()
+ # # #dict_edge_deparr={}
+ # # #interval_tag= soup.findAll("vehicle")
+ # # for vehicle_tag in soup.findAll("vehicle"):
+	  # # vehicle_id = vehicle_tag["id"]
+	  # # vehicle_route = vehicle_tag.find("route")
+	  # # vehicle_edges = vehicle_route["edges"]
+	  # # dict_edge_deparr[vehicle_id]= vehicle_edges # insert route of vehicle to dictionary
+	  #logging.debug("interval_end::::(%s)" % (interval_end))
+	  # logging.debug("endp::::(%s)" % (endp))
+	  # logging.debug("beginp::::(%s)" % (beginp))
+	  # logging.debug("interval_begin::::(%s)" % (interval_begin))
+	  #if (interval_begin == beginp and interval_end == endp):
+	  # edge_tag = interval_tag.findAll("edge")
+	  # for edge in edge_tag:
+	   # edge_id = edge["id"]
+	   # #logging.debug("edge_idedge_id::::(%s)" % (edge_id))
+
+	   # edge_departed = edge["departed"]
+	   # edge_arrived = edge["arrived"]
+	   # dict_edge_deparr[edge] = (edge_departed, edge_arrived)
+	   #logging.debug("dict_edge_deparr[edge]::::(%s)" % (dict_edge_deparr[edge]))
+
+       
+          
+		   # edge_entered = edge["entered"]
+		   # edge_left = edge["left"]
+		   # dict_edge_enterleft[edge] = (edge_entered, edge_left)
+		  
  departed_ids = traci.simulation.getDepartedIDList() 
- #arrived_ids = traci.simulation.getArrivedIDList() 
- for road in edgeallgraph:
-  list_all.append(traci.edge.getLastStepVehicleIDs(road))
- for v in list_all:
-  source = traci.vehicle.getRoadID(v)
-  route =  traci.vehicle.getRoute(v)
-  if source == destination:
-   arrived_ids.append(v)
-   
+ arrived_ids = traci.simulation.getArrivedIDList() 
  for road in graph.nodes_iter():
   if road.startswith(":"):
    for successor_road in graph.successors_iter(road):
@@ -41,12 +67,14 @@ def prediction_on_edge(graph, net):
 	  else:
 	    X_departed_i += 0
 	  
+	  
+     
      for arrive in arrived_ids:
 	  logging.debug("arrive::::(%s)" % (arrive))
 	  
 	  route= dict_edge_deparr[arrive] 
 	  destination= route[-1]
-	  if destination == road :
+	  if destination == road:
 	   X_arrived_i +=1
 	  else:
 	    X_arrived_i += 0
@@ -57,8 +85,38 @@ def prediction_on_edge(graph, net):
       C_i = ((Lenght_Lane *  N_Lane) / 7.5) 
      else:	 
       C_i = 0
-     
+     # for interval_tag in soup.findAll("interval"):
+	  # interval_begin = interval_tag["begin"]
+	  # interval_end = interval_tag["end"]
+	  # if ((str(interval_begin) == str(beginp)) and (str(interval_end) == str(endp))):
+
+	   
+	   # logging.debug("interval_begin::::(%s)" % (interval_begin))
+	   
+	   # logging.debug("interval_end::::(%s)" % ((interval_end)))
+	   # logging.debug("endp::::(%s)" % (endp))
+	   # logging.debug("beginp::::(%s)" % ((beginp)))
+	   # logging.debug("interval_begin::::(%s)" % ((interval_begin)))
+	   # logging.debug("interval_begin is beginp::::(%s)" % (str(interval_begin) == str(beginp)))
+	   # edge_tag = interval_tag.findAll("edge")
+	   # #break
+	 
+     # if road in edge_tag:
+	   # X_departed_i = edge["departed"]
+	   # X_arrived_i = edge["arrived"]
+      
+     # else:
+	  # X_departed_i =0
+	  # X_arrived_i=0
+       
+     # logging.debug("dict_edge_deparr[road]::::(%s)" % (dict_edge_deparr[road]))
+     # # 
+     # # 
+     # # entered , left = dict_edge_enterleft[road]
      print(list(bfs_edges(graph, road, reverse=True, L= 1)))
+     # list_succ = []
+     # for successor_road in graph.successors_iter(road):
+	  # list_succ.append(successor_road)
      
      Totaln=0
      Q_i_in=0
@@ -87,7 +145,16 @@ def prediction_on_edge(graph, net):
 	  logging.debug("nextNodeID::::(%s)" % (nextNodeID))
 	  
 	  logging.debug("roadroad::::(%s)" % (road))
+	  #logging.debug("edgeedgeedge::::(%s)" % (edge_net))
+	  # connection = edge.getOutgoing()
+	  # logging.debug("connection::::(%s)" % (connection))
+	 
+	   
 	  logging.debug("visit_bfs::::(%s)" % (visit_bfs))
+	  
+	  
+	  
+	   
 	  if Totaln != 0 :
 	   for edge in visit_bfs:
 	    if edge==road: continue
@@ -116,17 +183,66 @@ def prediction_on_edge(graph, net):
 		      if (edge + '_' + flane)== conn[0]:
 		       if (road + '_' + tlane)== conn[1]:
 			    if dict_State[indicate] == 'G':
-				 Q_i_in +=  (dict_numVehicle_for_edge[edge] / Totaln) *  (remaningdur / graph.edge[edge][road]["TTg"])#numberV_edge * (dict_numVehicle_for_edge[edge] / Totaln) *  (remaningdur / graph.edge[edge][road]["TTg"])
+				 Duration = traci.trafficlights.getPhaseDuration(TLSID)
+				 Q_i_in +=  numberV_edge * (dict_numVehicle_for_edge[edge] / Totaln) *  (Duration / 90) * (1/graph.edge[edge][road]["TTg"])
+             
+             
+             # logging.debug("numberV_edge::::(%s)" % (numberV_edge))
+             # logging.debug("dict_numVehicle_for_edge[edge]::::(%s)" % (dict_numVehicle_for_edge[edge]))
+             # logging.debug("Totaln::::(%s)" % (Totaln))
              
 	    else:
-		 Q_i_in += (dict_numVehicle_for_edge[edge] / Totaln)
+		 Q_i_in += (dict_numVehicle_for_edge[edge] / Totaln) *  (1/graph.edge[edge][road]["TTg"]) 
 	    
+		
 	  else:
 	   Q_i_in = 0
 	   
+     
+	   
+	  
      else:
-	  Q_i_in = 0
+	  Q_i_in = 0#dict_numVehicle_for_edge[e]= 0
       
+	   
+	 
+     # for e in visit_bfs:
+	  # if e==road: continue
+	  # if e.startswith(":"): continue
+	  # numberV_edge_v = traci.edge.getLastStepVehicleNumber(e)
+	  # Vehicle_ids = traci.edge.getLastStepVehicleIDs(e)
+	  # n= 0
+	  
+	  # for v in Vehicle_ids:
+	   # route = traci.vehicle.getRoute(v)
+	   # currentpos = traci.vehicle.getRoadID(v)
+	   # logging.debug("currentpos::::(%s)" % (currentpos))
+	   # if currentpos != route[-1]:
+	     # next_road = (route.index(currentpos)) + 1
+	     # logging.debug("next_road::::(%s)" % (next_road))
+	     # if route[next_road] == road:
+	       # n += 1
+       # # else:
+	    # # if route[next_road] == road:
+	     # # n += 1
+        
+	  # dict_numVehicle_for_edge[e]= n
+	  # Totaln += numberV_edge_v
+        
+     # if len(visit_bfs) > 1:
+	  # for edge in visit_bfs:
+	   # if edge==road: continue
+	   # if edge.startswith(":"): continue
+	   # numberV_edge = traci.edge.getLastStepVehicleNumber(edge)
+	   # if Totaln != 0 :
+	   	  # Q_i_in += numberV_edge * (dict_numVehicle_for_edge[edge] / Totaln)
+
+	   # else:
+	      # Q_i_in += 0
+     # else:
+	  # Q_i_in += 0
+	  
+	 
      ###############################################################
      print(list(bfs_edges(graph, road, reverse=False, L= 1)))
      nn = 0
@@ -134,6 +250,8 @@ def prediction_on_edge(graph, net):
      Q_i_out = 0
      dict_numVehicle_for_next_road={}
 	 
+     
+     
      listOutfromgoing = net.getEdge(road.encode("ascii")).getToNode().getIncoming()
      logging.debug("listOutfromgoing: %s" % listOutfromgoing)
      EdgeId_Outfromgoing=[]
@@ -143,7 +261,11 @@ def prediction_on_edge(graph, net):
         data = list_edgelist[0].split('id=')[1]
         EdgeId_Outfromgoing.append( ast.literal_eval(data.split(' ')[0]))
         logging.debug("EdgeIdEdgeId: %s" % EdgeId_Outfromgoing)
-		   	 
+		
+
+    
+	   
+         	 
      Vehicle_ids= traci.edge.getLastStepVehicleIDs(road)
      for edge in visit_bfs:
 	   dict_numVehicle_for_next_road[edge] =0
@@ -151,7 +273,10 @@ def prediction_on_edge(graph, net):
      for v in Vehicle_ids:
 	   route= traci.vehicle.getRoute(v)
 	   currentpos = traci.vehicle.getRoadID(v)
-	  
+	   # if currentpos == route[0]:
+	      # X_departed_i+=1
+	   # if currentpos == route[-1]:
+	      # X_arrived_i += 1
 	   if currentpos != route[-1]:
 	    next_road= (route.index(currentpos)) + 1
 	    if route[next_road] in visit_bfs:
@@ -159,7 +284,20 @@ def prediction_on_edge(graph, net):
                  
      for edge in EdgeId_Outfromgoing:
 	     Totalnn += traci.edge.getLastStepVehicleNumber(edge)
-	      
+	     # Vehicle_ids= traci.edge.getLastStepVehicleIDs(edge)
+	     # for v in Vehicle_ids:
+	       # route= traci.vehicle.getRoute(v)
+	       # currentpos = traci.vehicle.getRoadID(v)
+	       # next_road= (route.index(currentpos)) + 1
+	       # #if next_road == route[-1
+	       # if next_road == road:
+	       # nn += 1
+	     
+	     # Totalnn += nn 
+    
+       
+	   
+      # logging.debug("TLSTLSTLS::::(%s)" % (TLSID))  
      TLS = edge_road.getTLS()
      if  TLS is not None:
        TLSID= TLS.getID()
@@ -180,6 +318,7 @@ def prediction_on_edge(graph, net):
        remaningdur = (traci.trafficlights.getNextSwitch(TLSID)- traci.simulation.getCurrentTime()) /1000
 
        logging.debug("remaningdur::::(%s)" % (remaningdur))
+      #Program = traci.trafficlights.getProgram(TLSID)
        dict_State ={}
        i = 0
        for sta in state:
@@ -201,13 +340,19 @@ def prediction_on_edge(graph, net):
 		   if (road + '_' + flane) == conn[0]:
 		    if (edge + '_' + tlane) == conn[1]:
 			 if dict_State[indicate] == 'G':
-			  Q_i_out += (dict_numVehicle_for_next_road[edge] / Totalnn) * (remaningdur / graph.edge[road][edge]["TTg"]) #number_vehicles * (dict_numVehicle_for_next_road[edge] / Totalnn) * (remaningdur / graph.edge[road][edge]["TTg"]) 
-			      
+			  Duration = traci.trafficlights.getPhaseDuration(TLSID)
+			  Q_i_out += number_vehicles * (dict_numVehicle_for_next_road[edge] / Totalnn) *  (Duration / 90) * (1/graph.edge[edge][road]["TTg"]) 
+			  
+			 
+		         
 	     else:
-		  Q_i_out += (dict_numVehicle_for_next_road[edge] / Totalnn)#number_vehicles * (dict_numVehicle_for_next_road[edge] / Totalnn) #* (4./time)
+		  logging.debug("edgeedge::::(%s)" % (edge))
+		  logging.debug("roadroadroad::::(%s)" % (road))
+		  Q_i_out += (dict_numVehicle_for_next_road[edge] / Totalnn) * (1/graph.edge[edge][road]["TTg"]) 
 	   else:
 	      Q_i_out =0
 	 
+	   
      X_i_calculated_next_k = max ((number_vehicles +  Q_i_in + X_departed_i - Q_i_out - X_arrived_i), 0)
      
      for successor_road in graph.successors_iter(road):
@@ -232,5 +377,7 @@ def prediction_on_edge(graph, net):
         d= graph.edge[road][successor_road]["predict"]
         print("roadtest: {0}".format(road))
         print ("{0}w6 id={1}{2}{3} {4}{5}" .format('<','"',d,'"','/','>'))
+
+  
 
   
