@@ -87,22 +87,23 @@ def run(network, begin, end, interval):###############################
 			 logging.debug("rsuid for zone_conges start %s" % rsuid)
 			 logging.debug("rsuid edgelist[%s]  %s" % (rsuid,edgelist[rsuid]))
 			 zone_conges[rsuid] = float(Road_RSU_congestion_index(edgelist, rsuid, net))
+			 subgraph_gg=road_graph_travel_time.subgraph(dicttt_edgeRSUs[rsuid])
+			 prediction_area_RSU(subgraph_gg,road_graph_travel_time, edgelist,rsuid, net)
+			
 			 logging.debug("rsuid for zone_conges end %s" % zone_conges[rsuid])
+			 
         if step >= travel_time_cycle_begin and travel_time_cycle_begin <= end and step%interval == 0:
             periodic  = 1
+            # logging.debug("Updating travel time on roads at simulation time %d" % step)
             list_present_network=[]
 			################ Update Travel Time ##############################
             print("first")
             travel_time_on_roads(road_graph_travel_time, step, travel_time_cycle_begin == step)
             prediction_on_edge(road_graph_travel_time, net)
             road_congestion_at_traffic_area(road_graph_travel_time, edgelist, zone_conges, RSU_ids,net)
+            update_travel_time_on_roads(road_graph_travel_time, time, begin_of_cycle)
             Update_Travel_Time(road_graph_travel_time, net)
             for edge in edgeallgraph:
-			  dict_footprint[edge]=0
-             
-            i=0
-			########################################################################
-            for edge in listalledge:
 			 list_present_network.append(traci.edge.getLastStepVehicleIDs(edge))
 			
             for vehicle in list_present_network:#list_vehicle_set_route:
